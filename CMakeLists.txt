@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 project(OpenGLTemplate CXX)
-
+set(CMAKE_BUILD_TYPE RELEASE)
 #===========================================================================================
 # OPTIONAL LIBRARiES
 #
@@ -8,7 +8,7 @@ project(OpenGLTemplate CXX)
 # desired options on. Open an issue for additional default support.
 # See: https://github.com/Hoshiningen/OpenGL-Template/issues
 
-set(ENABLE_ASSIMP   ON CACHE BOOL "Add Open Asset Import Library (assimp) to the project" FORCE)
+set(ENABLE_ASSIMP   OFF CACHE BOOL "Add Open Asset Import Library (assimp) to the project" FORCE)
 
 #===========================================================================================
 # GLAD CONFIGURATION
