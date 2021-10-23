@@ -35,10 +35,21 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(IMGUI_DIR ${SOURCE_DIR}/imgui)
+set(IMGUI_BACKEND_DIR ${IMGUI_DIR}/glfw_opengl3)
 
 set(sources ${SOURCE_DIR}/main.cpp)
 
-add_executable(opengl-template ${sources} ${includes})
+set(imguisources 
+    ${IMGUI_DIR}/imgui.cpp 
+    ${IMGUI_DIR}/imgui_draw.cpp 
+    ${IMGUI_DIR}/imgui_tables.cpp 
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_BACKEND_DIR}/imgui_impl_glfw.cpp
+    ${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp)
+
+
+add_executable(opengl-template ${sources} ${imguisources} ${includes})
 
 # Perform dependency linkage
 include(${CMAKE_DIR}/LinkGLFW.cmake)
@@ -49,7 +60,10 @@ LinkGLAD(opengl-template PRIVATE)
 
 find_package(OpenGL REQUIRED)
 if (OpenGL_FOUND)
-    target_include_directories(opengl-template PRIVATE ${OPENGL_INCLDUE_DIRS})
+    target_include_directories(opengl-template PRIVATE 
+        ${OPENGL_INCLDUE_DIRS}
+        ${IMGUI_DIR}
+        ${IMGUI_BACKEND_DIR})
     target_link_libraries(opengl-template PRIVATE ${OPENGL_LIBRARIES})
 else()
     message(FATAL_ERROR "OpenGL was not found on the system")
