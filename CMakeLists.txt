@@ -50,13 +50,15 @@ set(imguisources
 
 
 add_executable(opengl-template ${sources} ${imguisources} ${includes})
-
+add_executable(guidemo ${IMGUI_DIR}/imgui_demo.cpp ${imguisources} ${includes})
 # Perform dependency linkage
 include(${CMAKE_DIR}/LinkGLFW.cmake)
 LinkGLFW(opengl-template PRIVATE)
+LinkGLFW(guidemo PRIVATE)
 
 include(${CMAKE_DIR}/LinkGLAD.cmake)
 LinkGLAD(opengl-template PRIVATE)
+LinkGLAD(guidemo PRIVATE)
 
 find_package(OpenGL REQUIRED)
 if (OpenGL_FOUND)
@@ -65,6 +67,12 @@ if (OpenGL_FOUND)
         ${IMGUI_DIR}
         ${IMGUI_BACKEND_DIR})
     target_link_libraries(opengl-template PRIVATE ${OPENGL_LIBRARIES})
+    target_include_directories(guidemo PRIVATE 
+        ${OPENGL_INCLDUE_DIRS}
+        ${IMGUI_DIR}
+        ${IMGUI_BACKEND_DIR})
+    target_link_libraries(guidemo PRIVATE ${OPENGL_LIBRARIES})
+
 else()
     message(FATAL_ERROR "OpenGL was not found on the system")
 endif()
@@ -80,6 +88,11 @@ set_target_properties(opengl-template PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO)
+set_target_properties(guidemo PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO)
 
 # Set project folders
 set_target_properties(opengl-template PROPERTIES FOLDER ${PROJECT_NAME})
+#set_target_properties(guidemo PROPERTIES FOLDER ${PROJECT_NAME})
