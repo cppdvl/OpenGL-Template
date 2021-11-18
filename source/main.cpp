@@ -49,12 +49,30 @@ struct GUI {
     {
         ImGui::Begin(title);
     }
-    
     static void DrawGui_TextWidget(const char* message)
     {
         ImGui::Text(message);
     }
 
+    static void DrawGui_Property(const char* caption, int& intprop)
+    {
+        ImGui::Text("%s: %02d", caption, intprop);
+    }
+    static void DrawGui_Property(const char* caption, double& intprop)
+    {
+        ImGui::Text("%s: %f", caption, intprop);
+    }
+    static void DrawGui_KeysDown()
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::Text("Keys down:");
+        for (int i = 0; i < IM_ARRAYSIZE(io.KeysDown); i++) 
+            if (ImGui::IsKeyDown(i))
+            {
+                ImGui::SameLine(); 
+                ImGui::Text("%03d (0x%X)", i, i); 
+            }
+    }
     static void DrawGui_EndWidget()
     {
         ImGui::End();
@@ -108,11 +126,16 @@ int main()
         glfwPollEvents();
         ProcessInput(window);
 
+        auto iSecs = static_cast<int>(glfwGetTime());
+        auto dSecs = static_cast<double>(glfwGetTime());
 
         GUI::StartInThisFrame();
         {
             GUI::DrawGui_BeginWidget("Hello World Widget");
             GUI::DrawGui_TextWidget("No Matter How Strong, Im Gonna Take You Down with one little stone");
+            GUI::DrawGui_Property("Secs Elapsed [integer]: ", iSecs);
+            GUI::DrawGui_Property("Secs Elapsed [double ]: ", dSecs);
+            GUI::DrawGui_KeysDown();
             GUI::DrawGui_EndWidget();
         }
         GUI::FinishGui_InThisFrame();
