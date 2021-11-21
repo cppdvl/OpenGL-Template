@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 project(OpenGLTemplate CXX)
-set(CMAKE_BUILD_TYPE RELEASE)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_STANDARD 17)
 #===========================================================================================
 # OPTIONAL LIBRARiES
 #
@@ -37,8 +38,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(IMGUI_DIR ${SOURCE_DIR}/imgui)
 set(IMGUI_BACKEND_DIR ${IMGUI_DIR}/glfw_opengl3)
+set(OBJ_LDR ${SOURCE_DIR}/objloader)
 
-set(sources ${SOURCE_DIR}/main.cpp)
+
+set(sources ${SOURCE_DIR}/main.cpp source/objloader/objloader.cpp)
 
 set(imguisources 
     ${IMGUI_DIR}/imgui.cpp 
@@ -51,6 +54,9 @@ set(imguisources
 
 add_executable(opengl-template ${sources} ${imguisources} ${includes})
 add_executable(guidemo ${IMGUI_DIR}/imgui_demo.cpp ${imguisources} ${includes})
+add_executable(objloader ${OBJ_LDR}/objloader.cpp ${OBJ_LDR}/objloadertest.cpp source/objloader/objloader.h)
+
+
 # Perform dependency linkage
 include(${CMAKE_DIR}/LinkGLFW.cmake)
 LinkGLFW(opengl-template PRIVATE)
@@ -59,6 +65,9 @@ LinkGLFW(guidemo PRIVATE)
 include(${CMAKE_DIR}/LinkGLAD.cmake)
 LinkGLAD(opengl-template PRIVATE)
 LinkGLAD(guidemo PRIVATE)
+
+include(${CMAKE_DIR}/LinkGLM.cmake)
+LinkGLM(objloader PRIVATE)
 
 find_package(OpenGL REQUIRED)
 if (OpenGL_FOUND)
