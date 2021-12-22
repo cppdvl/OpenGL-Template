@@ -2,50 +2,46 @@
 
 void BlenderImporter::OBJLoader::VisitVertex(){
 
+    auto& obj = m_objectname_data[objectname];
     auto [tlx, tly, tlz] = std::make_tuple(std::stof(tokenizedline[1]), std::stof(tokenizedline[2]), std::stof(tokenizedline[3]));
-    MeshElement::Vtx3f v(tlx, tly, tlz);
-    m_vertices.push_back(v);
+    GraphEntity::Vtx3f v(tlx, tly, tlz);
+    obj.m_vertices.push_back(v);
 
 }
 
 void BlenderImporter::OBJLoader::VisitUV() {
 
+    auto& obj = m_objectname_data[objectname];
     auto [tlx, tly] = std::make_tuple(std::stof(tokenizedline[1]), std::stof(tokenizedline[2]));
-    MeshElement::Vtx2f v(tlx, tly);
-    m_uvs.push_back(v);
+    GraphEntity::Vtx2f v(tlx, tly);
+    obj.m_uvs.push_back(v);
 
 }
 
 void BlenderImporter::OBJLoader::VisitNormal() {
 
+    auto& obj = m_objectname_data[objectname];
     auto [tlx, tly, tlz] = std::make_tuple(std::stof(tokenizedline[1]), std::stof(tokenizedline[2]), std::stof(tokenizedline[3]));
-    MeshElement::Vtx3f v(tlx, tly, tlz);
-    m_normals.push_back(v);
-
-}
-
-void BlenderImporter::OBJLoader::VisitCamera() {
-
+    GraphEntity::Vtx3f v(tlx, tly, tlz);
+    obj.m_normals.push_back(v);
 
 }
 
 void BlenderImporter::OBJLoader::VisitObject() {
 
-    BlenderImporter::Offset offset{};
-    offset.name = tokenizedline[1];
-    offset.faces = m_faces_vertices.size();
-    offset.normals = m_normals.size();
-    offset.uvs = m_uvs.size();
-    offset.vertex = m_uvs.size();
-    BlenderImporter::Visitor::offset.push_back(offset);
-
+    auto data = OBJVisitor::Data{};
+    data.m_mtllib = mtllib;
+    mtlname = std::string{};
+    objectname = tokenizedline[1];
+    m_objectname_data[objectname] = data;
 }
 
 void BlenderImporter::OBJLoader::VisitFace() {
 
-    MeshElement::FcIdx face_vertices;
-    MeshElement::FcIdx face_uvs;
-    MeshElement::FcIdx face_normals;
+    auto& obj = m_objectname_data[objectname];
+    GraphEntity::FcIdx face_vertices;
+    GraphEntity::FcIdx face_uvs;
+    GraphEntity::FcIdx face_normals;
     for (auto index = 1; index <= 3; ++index)
     {
         auto vertexreader = std::stringstream {tokenizedline[index]};
@@ -59,28 +55,92 @@ void BlenderImporter::OBJLoader::VisitFace() {
             faceIndex++;
         }
     }
-    m_faces_vertices.push_back(face_vertices);
-    m_faces_uvs.push_back(face_uvs);
-    m_faces_normals.push_back(face_normals);
+
+
+    if (!mtllib.empty() && !mtlname.empty()) obj.m_material_facesindex[mtlname] = obj.m_faces.m_faces_vertices.size();
+
+    obj.m_faces.m_faces_vertices.push_back(face_vertices);
+    obj.m_faces.m_faces_uvs.push_back(face_uvs);
+    obj.m_faces.m_faces_normals.push_back(face_normals);
 
 }
 
-void BlenderImporter::OBJLoader::Visit() {
+void BlenderImporter::MTLLoader::VisitNewMtl()
+{
+    lastIndex = tokenizedline[1];
+    m_data[lastIndex] = MTLVisitor::Data();
 
-    auto skip = [](){
+}
 
-    };
-    std::map<std::string, std::function<void()>> router {
-            {"v", [this](){m_state = State::VERTEX; this->VisitVertex(); }},
-            {"vt", [this](){m_state = State::VERTEX_TEXTURE; this->VisitUV();}},
-            {"vn", [this](){m_state = State::VERTEX_NORMAL; this->VisitNormal();}},
-            {"f", [this](){m_state = State::FACE; this->VisitFace();}},
-            {"o", [this](){m_state = State::OBJECT; this->VisitObject();}},
-            {"#", [this](){}},
-            {"s", [this](){}}
-    };
+void BlenderImporter::MTLLoader::VisitNs() {
 
-    std::for_each(file.begin(), file.end(), [this, &router](auto& fileLine){
+    auto& m_data_ref = m_data[lastIndex];
+    m_data_ref.m_Ns_specular_exp = std::stof(tokenizedline[1]);
+
+}
+
+void BlenderImporter::MTLLoader::VisitKa() {
+
+    auto [r,g,b] = std::make_tuple(std::stof(tokenizedline[1]), std::stof(tokenizedline[2]), std::stof(tokenizedline[3]));
+    auto& ref = m_data[lastIndex];
+    ref.m_Ka_ambient_color = GraphEntity::Color4 (r,g,b,ref.m_d_opacity);
+
+}
+
+void BlenderImporter::MTLLoader::VisitKd() {
+
+    auto [r,g,b] = std::make_tuple(std::stof(tokenizedline[1]), std::stof(tokenizedline[2]), std::stof(tokenizedline[3]));
+    auto& ref = m_data[lastIndex];
+    ref.m_Kd_diffuse_color = GraphEntity::Color4 (r,g,b,ref.m_d_opacity);
+
+
+}
+
+void BlenderImporter::MTLLoader::VisitKs() {
+
+    auto [r,g,b] = std::make_tuple(std::stof(tokenizedline[1]), std::stof(tokenizedline[2]), std::stof(tokenizedline[3]));
+    auto& ref = m_data[lastIndex];
+    ref.m_Ks_specular_color = GraphEntity::Color4 (r,g,b,ref.m_d_opacity);
+
+}
+
+void BlenderImporter::MTLLoader::VisitKe() {
+
+    auto [r,g,b] = std::make_tuple(std::stof(tokenizedline[1]), std::stof(tokenizedline[2]), std::stof(tokenizedline[3]));
+    auto& ref = m_data[lastIndex];
+    ref.m_Ke_emission_color = GraphEntity::Color4 (r,g,b,ref.m_d_opacity);
+
+}
+
+void BlenderImporter::MTLLoader::VisitNi() {
+
+    auto& ref = m_data[lastIndex];
+    ref.m_Ni_refraction_index = std::stof(tokenizedline[1]);
+
+}
+
+void BlenderImporter::MTLLoader::Visitillum() {
+
+    auto& ref = m_data[lastIndex];
+    ref.m_illum = std::stoul(tokenizedline[1]);
+
+}
+
+void BlenderImporter::MTLLoader::Visitd() {
+
+    auto& ref = m_data[lastIndex];
+    ref.m_d_opacity = std::stof(tokenizedline[1]);
+
+    ref.m_Ka_ambient_color.a = ref.m_d_opacity;
+    ref.m_Kd_diffuse_color.a = ref.m_d_opacity;
+    ref.m_Ks_specular_color.a = ref.m_d_opacity;
+    ref.m_Ke_emission_color.a = ref.m_d_opacity;
+
+}
+
+void BlenderImporter::Visitor::Visit() {
+
+    std::for_each(file.begin(), file.end(), [this](auto& fileLine){
 
         auto lineReader = std::stringstream {fileLine};
         auto token = std::string{};
@@ -89,14 +149,22 @@ void BlenderImporter::OBJLoader::Visit() {
         {
             tokenizedline.push_back(token);
         }
-        router[tokenizedline[0]]();
+        this->m_router[tokenizedline[0]]();
 
     });
 
 }
 
+void BlenderImporter::OBJLoader::VisitMTLLib() {
 
+    mtllib = tokenizedline[1];
+    mtlname = std::string{};
+    objectname = std::string{};
 
+}
+void BlenderImporter::OBJLoader::VisitUseMtl() {
+    mtlname = tokenizedline[1];
+}
 
 
 

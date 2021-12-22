@@ -2,6 +2,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include <vector>
 #include <iostream>
 
 #include <glad/glad.h>
@@ -85,7 +86,16 @@ struct GUI {
 
 };
 
+void BlockVao(unsigned int& vao)
+{
+    unsigned int vbo;
+    const float right = 1.0f;
+    const float left = -right;
+    const float up = 1.0f;
+    const float down = 0.0f;
+    std::vector<float> { };
 
+}
 
 int main()
 {

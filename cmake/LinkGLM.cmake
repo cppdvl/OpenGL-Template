@@ -12,6 +12,6 @@ macro(LinkGLM TARGET ACCESS)
     if (NOT glm_POPULATED)
         FetchContent_Populate(glm)
     endif()
-
+    message(STATUS "GLM Include : ${TARGET} ${ACCESS} ${glm_SOURCE_DIR}" )
     target_include_directories(${TARGET} ${ACCESS} ${glm_SOURCE_DIR})
 endmacro()
