@@ -23,6 +23,6 @@ macro(LinkGLAD TARGET ACCESS)
 
     target_include_directories(${TARGET} ${ACCESS} ${glad_SOURCE_DIR}/include)
     target_link_libraries(${TARGET} ${ACCESS} glad)
-
     add_dependencies(${TARGET} glad)
+
 endmacro()

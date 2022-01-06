@@ -186,7 +186,7 @@ namespace Application {
 int main(int argc, char**argv)
 {
 
-    GLFWwindow* pWindow;
+    /*GLFWwindow* pWindow;
 
 
     RenderSystem::Init(&pWindow, Application::sWindowsSize);
@@ -196,8 +196,8 @@ int main(int argc, char**argv)
 
     Application::MainLoop(pWindow);
 
-    RenderSystem::Shutdown();
-    /*BlenderImporter::OBJLoader importer("E:/WorkingDirectory/ModelSamples/sample.obj");
-    importer.Visit();*/
+    RenderSystem::Shutdown();*/
+    BlenderImporter::OBJLoader importer("E:/WorkingDirectory/ModelSamples/sample.obj");
+    importer.Visit();
     return 0;
 }

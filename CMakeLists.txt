@@ -35,15 +35,24 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Set directory paths
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 set(CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(GUI_DIR ${SOURCE_DIR}/gui)
 set(IMGUI_DIR ${SOURCE_DIR}/gui/imgui)
 set(IMGUI_BACKEND_DIR ${IMGUI_DIR}/glfw_opengl3)
 set(OBJ_LDR ${SOURCE_DIR}/objloader)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-set(sources ${SOURCE_DIR}/main.cpp source/objloader/objloader.cpp source/clioptions/clioptions.h source/fontrenderer/fntrender.cpp source/fontrenderer/backend.cpp)
+set(sources
+        source/objloader/objloader.cpp
+        source/clioptions/clioptions.h
+        source/fontrenderer/fntrenderer.h
+        source/fontrenderer/fntrender.cpp
+        source/shader/shader.h
+        source/backnrenderer/backnrenderer.h
+        source/backnrenderer/back/backend.cpp
+        source/backnrenderer/renderer/renderer.cpp)
 
 set(imguisources
     ${GUI_DIR}/openfile/ImFileDialog.cpp
@@ -55,10 +64,10 @@ set(imguisources
     ${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp)
 
 
-add_executable(opengl-template ${sources} ${imguisources} ${includes})
+add_executable(opengl-template ${SOURCE_DIR}/main.cpp ${sources} ${imguisources} ${includes})
 add_executable(guidemo ${IMGUI_DIR}/imgui_demo.cpp ${imguisources} ${includes})
 add_executable(objloader ${OBJ_LDR}/objloader.cpp ${OBJ_LDR}/objloadertest.cpp source/objloader/objloader.h ${imguisources})
-
+add_executable(fnttest ${SOURCE_DIR}/fontrenderer/test.cpp ${sources}  )
 
 # Perform dependency linkage
 include(${CMAKE_DIR}/LinkGLFW.cmake)
@@ -66,18 +75,23 @@ include(${CMAKE_DIR}/LinkGLAD.cmake)
 include(${CMAKE_DIR}/LinkGLM.cmake)
 include(${CMAKE_DIR}/LinkOpenFileDialog.cmake)
 include(${CMAKE_DIR}/LinkSTB.cmake)
+include(${CMAKE_DIR}/LinkFT2.cmake)
+
 
 LinkGLFW(opengl-template PRIVATE)
 LinkGLFW(guidemo PRIVATE)
 LinkGLFW(objloader PRIVATE)
+LinkGLFW(fnttest PRIVATE)
 
 LinkGLAD(opengl-template PRIVATE)
 LinkGLAD(guidemo PRIVATE)
 LinkGLAD(objloader PRIVATE)
+LinkGLAD(fnttest PRIVATE)
 
 
 LinkGLM(opengl-template PRIVATE)
 LinkGLM(objloader PRIVATE)
+LinkGLM(fnttest PRIVATE)
 
 LinkSTB(opengl-template PRIVATE)
 LinkSTB(objloader PRIVATE)
@@ -103,6 +117,17 @@ if (OpenGL_FOUND)
         ${IMGUI_DIR}
         ${IMGUI_BACKEND_DIR}
         ${GUI_DIR}/openfile)
+    target_include_directories(fnttest PRIVATE
+            ${OPENGL_INCLDUE_DIRS}
+            ${SOURCE_DIR}/clioptions
+            ${SOURCE_DIR}/shader
+            ${SOURCE_DIR}/backnrenderer
+            ${SOURCE_DIR}/fontrenderer
+            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ft2/include)
+    target_link_libraries(fnttest PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ft2/include/ft2.lib
+            ${OPENGL_LIBRARIES}
+            )
 else()
     message(FATAL_ERROR "OpenGL was not found on the system")
 endif()
@@ -126,3 +151,17 @@ set_target_properties(guidemo PROPERTIES
 # Set project folders
 set_target_properties(opengl-template PROPERTIES FOLDER ${PROJECT_NAME})
 #set_target_properties(guidemo PROPERTIES FOLDER ${PROJECT_NAME})
+
+
+
+#CUSTOM COMMMANDS
+add_custom_command(
+        TARGET fnttest POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/resources/shaders/text.vs.glsl  $<TARGET_FILE_DIR:fnttest>
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/resources/shaders/text.fs.glsl  $<TARGET_FILE_DIR:fnttest>
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/resources/fonts/consolas.ttf  $<TARGET_FILE_DIR:fnttest>
+
+)
+
+
+
