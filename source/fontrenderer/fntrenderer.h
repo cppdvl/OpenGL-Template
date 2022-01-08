@@ -36,7 +36,7 @@ namespace Text {
         unsigned int VBO{0};
         void Draw(const std::string&str, float x, float y, float scale, glm::vec3 color);
         Renderer(const std::string& vtxPath, const std::string& frgPath, const std::string& fontPath);
-
+        void SetCanvas(unsigned int width, unsigned int height);
     };
 
 

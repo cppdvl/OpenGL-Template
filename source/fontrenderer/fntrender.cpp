@@ -6,6 +6,11 @@
 #include <map>
 #include <utility>
 #include <filesystem>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -107,14 +112,18 @@ namespace Text{
             auto position = glm::vec2(x,y);
             position += glm::vec2 (cglyph.Bearing.x  , cglyph.Bearing.y - cglyph.Size.y) * scale;
             auto size = glm::vec2 (cglyph.Size.x, cglyph.Size.y) * scale;
+            auto position_size = position+size;
             //auto vertices_ = std::vector<float>{
             float vertices[6][4] = {
-                position.x,  position.y + size.y,  0.0f,   0.0f,
-                position.x,  position.y,           0.0f,   1.0f,
-                position.x + size.x,   position.y, 1.0f,   1.0f,
-                position.x,  position.y + size.y,  0.0f,   1.0f,
-                position.x,  position.y + size.y,  1.0f,   1.0f,
-                position.x + size.x,  position.y + size.y, 1.0f,   1.0f
+
+                position.x,         position_size.y,    0.0f,   0.0f,
+                position.x,         position.y,         0.0f,   1.0f,
+                position_size.x,    position.y,         1.0f,   1.0f,
+
+                position.x,         position_size.y,    0.0f,   0.0f,
+                position_size.x,    position.y,         1.0f,   1.0f,
+                position_size.x,    position_size.y,    1.0f,   0.0f
+
             };
             //auto vertices = vertices_.data();
             glBindTexture(GL_TEXTURE_2D, cglyph.TextureID);
@@ -129,11 +138,12 @@ namespace Text{
             auto glyphAdvanceInPixels = cglyph.Advance >> 6;
             x += glyphAdvanceInPixels * scale;
         }
-        glBindVertexArray(VAO);
+        glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
     Renderer::Renderer(const std::string& vtxPath, const std::string& frgPath, const std::string& fontPath) : shd(Shader(vtxPath.c_str(), frgPath.c_str()))
     {
+
         cs = GetCharacterSet(fontPath);
         if (cs.empty()) return;
         m_valid = true;
@@ -147,6 +157,12 @@ namespace Text{
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
+    }
+    void Renderer::SetCanvas(unsigned int width, unsigned int height)
+    {
+        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
+        shd.use();
+        glUniformMatrix4fv(glGetUniformLocation(shd.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     }
 
 }
