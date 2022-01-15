@@ -52,6 +52,12 @@ namespace Backend::Window
     {
         glfwDestroyWindow(pWindow);
     }
+
+    void SwapAndPoll(GLFWwindow*pWindow)
+    {
+        glfwSwapBuffers(pWindow);
+        glfwPollEvents();
+    }
 }
 
 

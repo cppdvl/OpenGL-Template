@@ -3,6 +3,9 @@ project(OpenGLTemplate CXX)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_VERBOSE_MAKEFILE  True)
 set(CMAKE_CXX_STANDARD 17)
+
+add_subdirectory(engine)
+#[[
 #===========================================================================================
 # OPTIONAL LIBRARiES
 #
@@ -34,9 +37,9 @@ set(GLAD_REPRODUCIBLE   OFF CACHE BOOL "Reproducible build" FORCE)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Set directory paths
-set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
+set(SOURCE_DIR engine/source)
 set(RESOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
-set(CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_DIR engine/cmake)
 set(GUI_DIR ${SOURCE_DIR}/gui)
 set(IMGUI_DIR ${SOURCE_DIR}/gui/imgui)
 set(IMGUI_BACKEND_DIR ${IMGUI_DIR}/glfw_opengl3)
@@ -45,14 +48,14 @@ set(OBJ_LDR ${SOURCE_DIR}/objloader)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 set(sources
-        source/objloader/objloader.cpp
-        source/clioptions/clioptions.h
-        source/fontrenderer/fntrenderer.h
-        source/fontrenderer/fntrender.cpp
-        source/shader/shader.h
-        source/backnrenderer/backnrenderer.h
-        source/backnrenderer/back/backend.cpp
-        source/backnrenderer/renderer/renderer.cpp)
+        engine/source/objloader/objloader.cpp
+        engine/source/clioptions/clioptions.h
+        engine/source/fontrenderer/fntrenderer.h
+        engine/source/fontrenderer/fntrender.cpp
+        engine/source/shader/shader.h
+        engine/source/backnrenderer/backnrenderer.h
+        engine/source/backnrenderer/back/backend.cpp
+        engine/source/backnrenderer/renderer/renderer.cpp)
 
 set(imguisources
     ${GUI_DIR}/openfile/ImFileDialog.cpp
@@ -62,14 +65,15 @@ set(imguisources
     ${IMGUI_DIR}/imgui_widgets.cpp
     ${IMGUI_BACKEND_DIR}/imgui_impl_glfw.cpp
     ${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp)
+]]
 
-
-add_executable(opengl-template ${SOURCE_DIR}/main.cpp ${sources} ${imguisources} ${includes})
+#[[add_executable(opengl-template ${SOURCE_DIR}/main.cpp ${sources} ${imguisources} ${includes})
 add_executable(guidemo ${IMGUI_DIR}/imgui_demo.cpp ${imguisources} ${includes})
-add_executable(objloader ${OBJ_LDR}/objloader.cpp ${OBJ_LDR}/objloadertest.cpp source/objloader/objloader.h ${imguisources})
-add_executable(fnttest ${SOURCE_DIR}/fontrenderer/test.cpp ${sources}  )
+add_executable(objloader ${OBJ_LDR}/objloader.cpp ${OBJ_LDR}/objloadertest.cpp engine/source/objloader/objloader.h ${imguisources})
+]]
+add_executable(fnttest engine/source/fontrenderer/test.cpp)
 
-# Perform dependency linkage
+#[[ Perform dependency linkage
 include(${CMAKE_DIR}/LinkGLFW.cmake)
 include(${CMAKE_DIR}/LinkGLAD.cmake)
 include(${CMAKE_DIR}/LinkGLM.cmake)
@@ -123,9 +127,9 @@ if (OpenGL_FOUND)
             ${SOURCE_DIR}/shader
             ${SOURCE_DIR}/backnrenderer
             ${SOURCE_DIR}/fontrenderer
-            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ft2/include)
+            engine/thirdparty/ft2/include)
     target_link_libraries(fnttest PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/ft2/include/ft2.lib
+            engine/thirdparty/ft2/include/ft2.lib
             ${OPENGL_LIBRARIES}
             )
 else()
@@ -165,3 +169,4 @@ add_custom_command(
 
 
 
+]]
